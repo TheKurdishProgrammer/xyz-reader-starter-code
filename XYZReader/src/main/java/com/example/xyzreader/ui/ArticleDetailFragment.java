@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
+import android.support.design.widget.SubtitleCollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.app.ShareCompat;
@@ -75,7 +76,7 @@ public class ArticleDetailFragment extends Fragment implements
     private GregorianCalendar START_OF_EPOCH = new GregorianCalendar(2, 1, 1);
     private RelativeLayout progressBar;
     private CoordinatorLayout mLayout;
-
+    private SubtitleCollapsingToolbarLayout collapsingToolbarLayout;
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -145,6 +146,7 @@ public class ArticleDetailFragment extends Fragment implements
 //        });
 
         Toolbar toolbar = mRootView.findViewById(R.id.toolbar);
+        collapsingToolbarLayout = mRootView.findViewById(R.id.toolbar_layout);
         getActivityCast().setSupportActionBar(toolbar);
         getActivityCast().getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         mPhotoView = (ImageView) mRootView.findViewById(R.id.photo);
@@ -223,16 +225,26 @@ public class ArticleDetailFragment extends Fragment implements
         bylineView.setMovementMethod(new LinkMovementMethod());
         TextView bodyView = (TextView) mRootView.findViewById(R.id.article_body);
 
-
         bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
 
         if (mCursor != null) {
             mRootView.setAlpha(0);
             mRootView.animate().alpha(1);
             titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
+            collapsingToolbarLayout.setTitle((mCursor.getString(ArticleLoader.Query.TITLE)));
+
             Date publishedDate = parsePublishedDate();
             if (!publishedDate.before(START_OF_EPOCH.getTime())) {
                 bylineView.setText(Html.fromHtml(
+                        DateUtils.getRelativeTimeSpanString(
+                                publishedDate.getTime(),
+                                System.currentTimeMillis(), DateUtils.HOUR_IN_MILLIS,
+                                DateUtils.FORMAT_ABBREV_ALL).toString()
+                                + " by <font color='#ffffff'>"
+                                + mCursor.getString(ArticleLoader.Query.AUTHOR)
+                                + "</font>"));
+
+                collapsingToolbarLayout.setSubtitle(Html.fromHtml(
                         DateUtils.getRelativeTimeSpanString(
                                 publishedDate.getTime(),
                                 System.currentTimeMillis(), DateUtils.HOUR_IN_MILLIS,
